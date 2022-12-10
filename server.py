@@ -3,7 +3,7 @@ import socket
 import threading
 
 HOST = '127.0.0.1'
-PORT = 1234
+PORT = 1111
 LISTENER_LIMIT = 5
 active_clients = []
 
@@ -11,7 +11,8 @@ def listen_for_messages(client, username):
 
     while 1:
 
-        message = client.recv(2048).decode('utf-8')
+        message = client.recv(2048).decode()
+        
         if message != '':
             
             final_msg = username + '~' + message
@@ -34,7 +35,7 @@ def send_messages_to_all(message):
 def client_handler(client):
     while 1:
 
-        username = client.recv(2048).decode('utf-8')
+        username = client.recv(2048).decode()
         if username != '':
             active_clients.append((username, client))
             prompt_message = "SERVER~" + f"{username} added to the chat"

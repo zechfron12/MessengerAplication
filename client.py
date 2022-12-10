@@ -3,11 +3,12 @@ import socket
 import threading
 import tkinter as tk
 import emoji
-from tkinter import scrolledtext
-from tkinter import messagebox
+import json
+from tkinter import scrolledtext, messagebox ,filedialog
+from PIL import Image, ImageTk
 
 HOST = '127.0.0.1'
-PORT = 1234
+PORT = 1111
 
 DARK_GREY = '#78246f'
 MEDIUM_GREY = '#ffffff'
@@ -22,6 +23,11 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 def add_message(message):
     message_box.config(state=tk.NORMAL)
     message_box.insert(tk.END, emoji.emojize(message) + '\n')
+    message_box.config(state=tk.DISABLED)
+    
+def add_image(image):
+    message_box.config(state=tk.NORMAL)
+    message_box.image_create(tk.END, image = sent_image)
     message_box.config(state=tk.DISABLED)
 
 def connect():
@@ -50,6 +56,16 @@ def send_message():
         message_textbox.delete(0, len(message))
     else:
         messagebox.showerror("Empty message", "Message cannot be empty")
+        
+def send_image():
+    path=filedialog.askopenfilename(filetypes=[("Image File",'.jpg')])
+    im = Image.open(path)
+    global sent_image
+    sent_image = ImageTk.PhotoImage(im)
+    add_image(sent_image)
+    
+    
+    
 
 root = tk.Tk()
 root.geometry("600x600")
@@ -78,11 +94,15 @@ username_textbox.pack(side=tk.LEFT)
 username_button = tk.Button(top_frame, text="Join", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=connect)
 username_button.pack(side=tk.LEFT, padx=15)
 
-message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, width=38)
+message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, width=28)
 message_textbox.pack(side=tk.LEFT, padx=10)
 
 message_button = tk.Button(bottom_frame, text=emoji.emojize("Send"), font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_message)
 message_button.pack(side=tk.LEFT, padx=10)
+
+
+send_image_button= tk.Button(bottom_frame, text= "Send Image", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_image)
+send_image_button.pack(side= tk.LEFT)
 
 message_box = scrolledtext.ScrolledText(middle_frame, font=SMALL_FONT, bg=MEDIUM_GREY, fg=BLACK, width=67, height=26.5)
 message_box.config(state=tk.DISABLED)
@@ -93,7 +113,7 @@ def listen_for_messages_from_server(client):
 
     while 1:
 
-        message = client.recv(2048).decode('utf-8')
+        message = client.recv(2048).decode()
         if message != '':
             username = message.split("~")[0]
             content = message.split('~')[1]
