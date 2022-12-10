@@ -3,7 +3,7 @@ import socket
 import threading
 import tkinter as tk
 import emoji
-import json
+from base64 import b64decode, b64encode
 from tkinter import scrolledtext, messagebox ,filedialog
 from PIL import Image, ImageTk
 
@@ -59,6 +59,18 @@ def send_message():
         
 def send_image():
     path=filedialog.askopenfilename(filetypes=[("Image File",'.jpg')])
+    
+    image_handle = open(path, 'rb')
+    raw_image_data = image_handle.read()
+    
+    encoded_data = b64encode(raw_image_data)
+    # decoded_data = b64decode(encoded_data)
+    
+    print(encoded_data.decode("utf-8"))
+    client.sendall(encoded_data)
+    
+    
+    
     im = Image.open(path)
     global sent_image
     sent_image = ImageTk.PhotoImage(im)
