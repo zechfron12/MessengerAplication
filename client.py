@@ -2,6 +2,7 @@
 import socket
 import threading
 import tkinter as tk
+import emoji
 from tkinter import scrolledtext
 from tkinter import messagebox
 
@@ -11,7 +12,7 @@ PORT = 1234
 DARK_GREY = '#78246f'
 MEDIUM_GREY = '#ffffff'
 OCEAN_BLUE = '#724a6d'
-WHITE = "white"
+BLACK = "black"
 FONT = ("Helvetica", 17)
 BUTTON_FONT = ("Helvetica", 15)
 SMALL_FONT = ("Helvetica", 13)
@@ -20,7 +21,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 def add_message(message):
     message_box.config(state=tk.NORMAL)
-    message_box.insert(tk.END, message + '\n')
+    message_box.insert(tk.END, emoji.emojize(message) + '\n')
     message_box.config(state=tk.DISABLED)
 
 def connect():
@@ -68,22 +69,22 @@ middle_frame.grid(row=1, column=0, sticky=tk.NSEW)
 bottom_frame = tk.Frame(root, width=600, height=100, bg=DARK_GREY)
 bottom_frame.grid(row=2, column=0, sticky=tk.NSEW)
 
-username_label = tk.Label(top_frame, text="Enter username:", font=FONT, bg=DARK_GREY, fg=WHITE)
+username_label = tk.Label(top_frame, text="Enter username:", font=FONT, bg=DARK_GREY, fg=BLACK)
 username_label.pack(side=tk.LEFT, padx=10)
 
-username_textbox = tk.Entry(top_frame, font=FONT, bg=MEDIUM_GREY, fg=WHITE, width=23)
+username_textbox = tk.Entry(top_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, width=23)
 username_textbox.pack(side=tk.LEFT)
 
-username_button = tk.Button(top_frame, text="Join", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=WHITE, command=connect)
+username_button = tk.Button(top_frame, text="Join", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=connect)
 username_button.pack(side=tk.LEFT, padx=15)
 
-message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=WHITE, width=38)
+message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, width=38)
 message_textbox.pack(side=tk.LEFT, padx=10)
 
-message_button = tk.Button(bottom_frame, text="Send", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=WHITE, command=send_message)
+message_button = tk.Button(bottom_frame, text=emoji.emojize("Send"), font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_message)
 message_button.pack(side=tk.LEFT, padx=10)
 
-message_box = scrolledtext.ScrolledText(middle_frame, font=SMALL_FONT, bg=MEDIUM_GREY, fg=WHITE, width=67, height=26.5)
+message_box = scrolledtext.ScrolledText(middle_frame, font=SMALL_FONT, bg=MEDIUM_GREY, fg=BLACK, width=67, height=26.5)
 message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
