@@ -61,9 +61,7 @@ def send_text():
     
     if message != '':
         dic = create_message_dic(username, "", "message", message)
-        
-        print("This is what I am sending")
-        print(dic)
+       
         client.sendall(str(dic).encode())
         message_textbox.delete(0, len(message))
     else:
@@ -139,8 +137,6 @@ message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
 def handle_img_received(b64image):
-    print("handling image.....")
-    print(b64image)
     raw_data = b64decode(b64image)
     stream = io.BytesIO(raw_data)
     img = Image.open(stream)
