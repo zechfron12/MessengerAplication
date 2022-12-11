@@ -3,7 +3,7 @@ import socket
 import threading
 import tkinter as tk
 import emoji
-from base64 import b64decode, b64encode
+from base64 import b64encode
 from tkinter import scrolledtext, messagebox ,filedialog
 from PIL import Image, ImageTk
 
@@ -19,6 +19,15 @@ BUTTON_FONT = ("Helvetica", 15)
 SMALL_FONT = ("Helvetica", 13)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+def create_message_dic(sender, receiver,message_type, content):
+    return {
+        "sender": sender,
+        "receiver": receiver,
+        "type": message_type,
+        "content": content
+    }
+
 
 def add_message(message):
     message_box.config(state=tk.NORMAL)
@@ -38,9 +47,11 @@ def connect():
     except:
         messagebox.showerror("Unable to connect to server", f"Unable to connect to server {HOST} {PORT}")
 
+    global username
     username = username_textbox.get()
     if username != '':
-        client.sendall(username.encode())
+        dic = create_message_dic(username, "server", "login", username)
+        client.sendall(str(dic).encode())
     else:
         messagebox.showerror("Invalid username", "Username cannot be empty")
 
@@ -49,10 +60,15 @@ def connect():
     username_textbox.config(state=tk.DISABLED)
     username_button.config(state=tk.DISABLED)
 
-def send_message():
+def send_text():
     message = message_textbox.get()
+    
     if message != '':
-        client.sendall(message.encode())
+        dic = create_message_dic(username, "", "message", message)
+        
+        print("This is what I am sending")
+        print(dic)
+        client.sendall(str(dic).encode())
         message_textbox.delete(0, len(message))
     else:
         messagebox.showerror("Empty message", "Message cannot be empty")
@@ -66,8 +82,10 @@ def send_image():
     encoded_data = b64encode(raw_image_data)
     # decoded_data = b64decode(encoded_data)
     
-    print(encoded_data.decode("utf-8"))
-    client.sendall(encoded_data)
+    dic = create_message_dic(username, "", "image", encoded_data)
+    print("This is the dic")
+    print(str(dic))
+    client.sendall(str(dic).encode())
     
     
     
@@ -78,7 +96,7 @@ def send_image():
     
 
 def onMessageReturnPress(*arg):
-    send_message()
+    send_text()
 
 def onIdReturnPress(*arg):
     connect()
@@ -118,7 +136,7 @@ message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, wi
 message_textbox.bind('<Return>', onMessageReturnPress)
 message_textbox.pack(side=tk.LEFT, padx=10)
 
-message_button = tk.Button(bottom_frame, text=emoji.emojize("Send"), font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_message)
+message_button = tk.Button(bottom_frame, text=emoji.emojize("Send"), font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_text)
 message_button.pack(side=tk.LEFT, padx=10)
 
 
@@ -129,17 +147,24 @@ message_box = scrolledtext.ScrolledText(middle_frame, font=SMALL_FONT, bg=MEDIUM
 message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
+def handle_img_received(b64image):
+    print("handling image.....")
 
 def listen_for_messages_from_server(client):
 
     while 1:
 
-        message = client.recv(2048).decode()
+        message = client.recv(4096).decode()
         if message != '':
-            username = message.split("~")[0]
-            content = message.split('~')[1]
+            dic_received = eval(message)
+            
+            username = dic_received["sender"]
+            content = dic_received["content"]
 
-            add_message(f"[{username}] {content}")
+            if dic_received["type"] == "image":
+                handle_img_received(content)
+            else:
+                add_message(f"[{username}] {content}")
             
         else:
             messagebox.showerror("Error", "Message recevied from client is empty")

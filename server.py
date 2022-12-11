@@ -7,16 +7,22 @@ PORT = 1111
 LISTENER_LIMIT = 5
 active_clients = []
 
+def create_message(sender, receiver,message_type, content):
+    return {
+        "sender": sender,
+        "receiver": receiver,
+        "type": message_type,
+        "content": content
+    }
+
 def listen_for_messages(client, username):
 
     while 1:
 
-        message = client.recv(2048).decode()
+        message = client.recv(4096).decode()
         
         if message != '':
-            
-            final_msg = username + '~' + message
-            send_messages_to_all(final_msg)
+            send_messages_to_all(message)
 
         else:
             print(f"The message send from client {username} is empty")
@@ -34,12 +40,15 @@ def send_messages_to_all(message):
 
 def client_handler(client):
     while 1:
-
-        username = client.recv(2048).decode()
+        message = client.recv(4096).decode()
+        
+        login_dic = eval(message)
+        username = login_dic["sender"]
         if username != '':
             active_clients.append((username, client))
             prompt_message = "SERVER~" + f"{username} added to the chat"
-            send_messages_to_all(prompt_message)
+            dic_to_send = create_message('server', 'all', 'informative', prompt_message)
+            send_messages_to_all(str(dic_to_send))
             break
         else:
             print("Client username is empty")
