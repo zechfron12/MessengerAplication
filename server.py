@@ -19,7 +19,7 @@ def listen_for_messages(client, username):
 
     while 1:
 
-        message = client.recv(4096).decode()
+        message = client.recv(16394).decode()
         
         if message != '':
             send_messages_to_all(message)
@@ -40,7 +40,7 @@ def send_messages_to_all(message):
 
 def client_handler(client):
     while 1:
-        message = client.recv(4096).decode()
+        message = client.recv(16384).decode()
         
         login_dic = eval(message)
         username = login_dic["sender"]

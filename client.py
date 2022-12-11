@@ -83,8 +83,6 @@ def send_image():
     # decoded_data = b64decode(encoded_data)
     
     dic = create_message_dic(username, "", "image", encoded_data)
-    print("This is the dic")
-    print(str(dic))
     client.sendall(str(dic).encode())
     
     
@@ -154,7 +152,7 @@ def listen_for_messages_from_server(client):
 
     while 1:
 
-        message = client.recv(4096).decode()
+        message = client.recv(16384).decode()
         if message != '':
             dic_received = eval(message)
             
