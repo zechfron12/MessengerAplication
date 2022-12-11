@@ -76,6 +76,13 @@ def send_image():
     sent_image = ImageTk.PhotoImage(im)
     add_image(sent_image)
     
+
+def onMessageReturnPress(*arg):
+    send_message()
+
+def onIdReturnPress(*arg):
+    connect()
+    
     
     
 
@@ -101,12 +108,14 @@ username_label = tk.Label(top_frame, text="Enter username:", font=FONT, bg=DARK_
 username_label.pack(side=tk.LEFT, padx=10)
 
 username_textbox = tk.Entry(top_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, width=23)
+username_textbox.bind('<Return>', onIdReturnPress)
 username_textbox.pack(side=tk.LEFT)
 
 username_button = tk.Button(top_frame, text="Join", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=connect)
 username_button.pack(side=tk.LEFT, padx=15)
 
 message_textbox = tk.Entry(bottom_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, width=28)
+message_textbox.bind('<Return>', onMessageReturnPress)
 message_textbox.pack(side=tk.LEFT, padx=10)
 
 message_button = tk.Button(bottom_frame, text=emoji.emojize("Send"), font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_message)
