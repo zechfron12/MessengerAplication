@@ -3,7 +3,8 @@ import socket
 import threading
 import tkinter as tk
 import emoji
-from base64 import b64encode
+import io
+from base64 import b64encode, b64decode
 from tkinter import scrolledtext, messagebox ,filedialog
 from PIL import Image, ImageTk
 
@@ -34,11 +35,6 @@ def add_message(message):
     message_box.insert(tk.END, emoji.emojize(message) + '\n')
     message_box.config(state=tk.DISABLED)
     
-def add_image(image):
-    message_box.config(state=tk.NORMAL)
-    message_box.image_create(tk.END, image = sent_image)
-    message_box.config(state=tk.DISABLED)
-
 def connect():
     try:
         client.connect((HOST, PORT))
@@ -88,9 +84,6 @@ def send_image():
     
     
     im = Image.open(path)
-    global sent_image
-    sent_image = ImageTk.PhotoImage(im)
-    add_image(sent_image)
     
 
 def onMessageReturnPress(*arg):
@@ -147,6 +140,19 @@ message_box.pack(side=tk.TOP)
 
 def handle_img_received(b64image):
     print("handling image.....")
+    print(b64image)
+    raw_data = b64decode(b64image)
+    stream = io.BytesIO(raw_data)
+    img = Image.open(stream)
+    
+    global recv_img
+    recv_img = ImageTk.PhotoImage(img)
+    
+    message_box.config(state=tk.NORMAL)
+    message_box.image_create(tk.END, image = recv_img)
+    message_box.config(state=tk.DISABLED)
+    
+    
 
 def listen_for_messages_from_server(client):
 
