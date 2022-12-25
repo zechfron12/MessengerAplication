@@ -1,11 +1,9 @@
 # import required modules
 import socket
 import threading
-import tkinter as tk
 import emoji
 import io
 import tkinter as tk
-from tkinter import scrolledtext, messagebox, filedialog
 from base64 import b64encode, b64decode
 from tkinter import scrolledtext, messagebox, filedialog
 from PIL import Image, ImageTk
@@ -57,7 +55,7 @@ def connect():
         messagebox.showerror("Invalid username", "Username cannot be empty")
 
     threading.Thread(target=listen_for_messages_from_server,
-                     args=(client, )).start()
+                     args=(client,)).start()
 
     username_textbox.config(state=tk.DISABLED)
     username_button.config(state=tk.DISABLED)
@@ -102,7 +100,6 @@ def handle_img_received(b64image):
 
 
 def listen_for_messages_from_server(client):
-
     while 1:
 
         message = client.recv(16384).decode()
@@ -170,7 +167,6 @@ message_button = tk.Button(bottom_frame, text=emoji.emojize(
     "Send"), font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_text)
 message_button.pack(side=tk.LEFT, padx=10)
 
-
 send_image_button = tk.Button(bottom_frame, text="Send Image",
                               font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_image)
 send_image_button.pack(side=tk.LEFT)
@@ -180,11 +176,11 @@ message_box = scrolledtext.ScrolledText(
 message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
+
 # main function
 
 
 def main():
-
     root.mainloop()
 
 

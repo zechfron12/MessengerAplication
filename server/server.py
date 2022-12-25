@@ -18,7 +18,6 @@ def create_message_dic(sender, receiver, message_type, content):
 
 
 def listen_for_messages(client, username):
-
     while 1:
 
         message = client.recv(16394).decode()
@@ -31,14 +30,11 @@ def listen_for_messages(client, username):
 
 
 def send_message_to_client(client, message):
-
     client.sendall(message.encode())
 
 
 def send_messages_to_all(message):
-
     for user in active_clients:
-
         send_message_to_client(user[1], message)
 
 
@@ -59,7 +55,7 @@ def client_handler(client):
             print("Client username is empty")
 
     threading.Thread(target=listen_for_messages,
-                     args=(client, username, )).start()
+                     args=(client, username,)).start()
 
 
 def main():
@@ -73,11 +69,10 @@ def main():
     server.listen(LISTENER_LIMIT)
 
     while 1:
-
         client, address = server.accept()
         print(f"Successfully connected to client {address[0]} {address[1]}")
 
-        threading.Thread(target=client_handler, args=(client, )).start()
+        threading.Thread(target=client_handler, args=(client,)).start()
 
 
 if __name__ == '__main__':
