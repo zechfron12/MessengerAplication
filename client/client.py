@@ -11,9 +11,9 @@ from PIL import Image, ImageTk
 HOST = '127.0.0.1'
 PORT = 1111
 
-DARK_GREY = '#78246f'
-MEDIUM_GREY = '#ffffff'
-OCEAN_BLUE = '#724a6d'
+DEEP_PURPLE = '#78246f'
+WHITE = '#ffffff'
+LIGH_PURPLE = '#724a6d'
 BLACK = "black"
 FONT = ("Helvetica", 17)
 BUTTON_FONT = ("Helvetica", 15)
@@ -22,10 +22,9 @@ SMALL_FONT = ("Helvetica", 13)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
-def create_message_dic(sender, receiver, message_type, content):
+def create_message_dic(sender, message_type, content):
     return {
         "sender": sender,
-        "receiver": receiver,
         "type": message_type,
         "content": content
     }
@@ -49,7 +48,7 @@ def connect():
     global username
     username = username_textbox.get()
     if username != '':
-        dic = create_message_dic(username, "server", "login", username)
+        dic = create_message_dic(username, "login", username)
         client.sendall(str(dic).encode())
     else:
         messagebox.showerror("Invalid username", "Username cannot be empty")
@@ -65,7 +64,7 @@ def send_text():
     message = message_textbox.get()
 
     if message != '':
-        dic = create_message_dic(username, "", "message", message)
+        dic = create_message_dic(username, "message", message)
 
         client.sendall(str(dic).encode())
         message_textbox.delete(0, len(message))
@@ -81,7 +80,7 @@ def send_image():
 
     encoded_data = b64encode(raw_image_data)
 
-    dic = create_message_dic(username, "", "image", encoded_data)
+    dic = create_message_dic(username, "image", encoded_data)
     client.sendall(str(dic).encode())
     im = Image.open(path)
 
@@ -136,43 +135,43 @@ root.grid_rowconfigure(0, weight=1)
 root.grid_rowconfigure(1, weight=4)
 root.grid_rowconfigure(2, weight=1)
 
-top_frame = tk.Frame(root, width=600, height=100, bg=DARK_GREY)
+top_frame = tk.Frame(root, width=600, height=100, bg=DEEP_PURPLE)
 top_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
-middle_frame = tk.Frame(root, width=600, height=400, bg=MEDIUM_GREY)
+middle_frame = tk.Frame(root, width=600, height=400, bg=WHITE)
 middle_frame.grid(row=1, column=0, sticky=tk.NSEW)
 
-bottom_frame = tk.Frame(root, width=600, height=100, bg=DARK_GREY)
+bottom_frame = tk.Frame(root, width=600, height=100, bg=DEEP_PURPLE)
 bottom_frame.grid(row=2, column=0, sticky=tk.NSEW)
 
 username_label = tk.Label(
-    top_frame, text="Enter username:", font=FONT, bg=DARK_GREY, fg=BLACK)
+    top_frame, text="Enter username:", font=FONT, bg=DEEP_PURPLE, fg=BLACK)
 username_label.pack(side=tk.LEFT, padx=10)
 
 username_textbox = tk.Entry(
-    top_frame, font=FONT, bg=MEDIUM_GREY, fg=BLACK, width=23)
+    top_frame, font=FONT, bg=WHITE, fg=BLACK, width=23)
 username_textbox.bind('<Return>', onIdReturnPress)
 username_textbox.pack(side=tk.LEFT)
 
 username_button = tk.Button(
-    top_frame, text="Join", font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=connect)
+    top_frame, text="Join", font=BUTTON_FONT, bg=LIGH_PURPLE, fg=BLACK, command=connect)
 username_button.pack(side=tk.LEFT, padx=15)
 
 message_textbox = tk.Entry(bottom_frame, font=FONT,
-                           bg=MEDIUM_GREY, fg=BLACK, width=28)
+                           bg=WHITE, fg=BLACK, width=28)
 message_textbox.bind('<Return>', onMessageReturnPress)
 message_textbox.pack(side=tk.LEFT, padx=10)
 
 message_button = tk.Button(bottom_frame, text=emoji.emojize(
-    "Send"), font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_text)
+    "Send"), font=BUTTON_FONT, bg=LIGH_PURPLE, fg=BLACK, command=send_text)
 message_button.pack(side=tk.LEFT, padx=10)
 
 send_image_button = tk.Button(bottom_frame, text="Send Image",
-                              font=BUTTON_FONT, bg=OCEAN_BLUE, fg=BLACK, command=send_image)
+                              font=BUTTON_FONT, bg=LIGH_PURPLE, fg=BLACK, command=send_image)
 send_image_button.pack(side=tk.LEFT)
 
 message_box = scrolledtext.ScrolledText(
-    middle_frame, font=SMALL_FONT, bg=MEDIUM_GREY, fg=BLACK, width=67, height=26.5)
+    middle_frame, font=SMALL_FONT, bg=WHITE, fg=BLACK, width=67, height=26.5)
 message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
