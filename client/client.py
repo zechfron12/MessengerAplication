@@ -22,9 +22,10 @@ SMALL_FONT = ("Helvetica", 13)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
-def create_message_dic(sender, message_type, content):
+def create_message_dic(sender,receiver, message_type, content):
     return {
         "sender": sender,
+        "receiver": receiver,
         "type": message_type,
         "content": content
     }
@@ -48,7 +49,7 @@ def connect():
     global username
     username = username_textbox.get()
     if username != '':
-        dic = create_message_dic(username, "login", username)
+        dic = create_message_dic(username,"server","login", username)
         client.sendall(str(dic).encode())
     else:
         messagebox.showerror("Invalid username", "Username cannot be empty")
@@ -64,7 +65,7 @@ def send_text():
     message = message_textbox.get()
 
     if message != '':
-        dic = create_message_dic(username, "message", message)
+        dic = create_message_dic(username,"all", "message", message)
 
         client.sendall(str(dic).encode())
         message_textbox.delete(0, len(message))
@@ -80,7 +81,7 @@ def send_image():
 
     encoded_data = b64encode(raw_image_data)
 
-    dic = create_message_dic(username, "image", encoded_data)
+    dic = create_message_dic(username,"","image", encoded_data)
     client.sendall(str(dic).encode())
     im = Image.open(path)
 
@@ -116,7 +117,7 @@ def listen_for_messages_from_server(client):
         else:
             messagebox.showerror(
                 "Error", "Message recevied from client is empty")
-
+            
 
 def onMessageReturnPress(*arg):
     send_text()

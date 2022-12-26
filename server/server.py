@@ -8,15 +8,16 @@ LISTENER_LIMIT = 5
 active_clients = []
 
 
-def create_message_dic(sender, message_type, content):
+def create_message_dic(sender,receiver, message_type, content):
     return {
         "sender": sender,
+        "reveicer": receiver,
         "type": message_type,
         "content": content
     }
 
 def save_message(message):
-    with open("server/data/history.txt", "a") as file_object:
+    with open("server/database/history.txt", "a") as file_object:
         file_object.write(message + '\n')
     
 
@@ -52,7 +53,7 @@ def client_handler(client):
             active_clients.append((username, client))
             prompt_message = "SERVER~" + f"{username} added to the chat"
             dic_to_send = create_message_dic(
-                'server', 'informative', prompt_message)
+                'server',"all",'informative', prompt_message)
             send_messages_to_all(str(dic_to_send))
             break
         else:
