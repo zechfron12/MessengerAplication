@@ -1,4 +1,5 @@
 # import required modules
+import sys
 import socket
 import threading
 import emoji
@@ -47,7 +48,7 @@ def connect():
                              f"Unable to connect to server {HOST} {PORT}")
 
     global username
-    username = username_textbox.get()
+    username = sys.argv[1]
     if username != '':
         dic = create_message_dic(username,"server","login", username)
         client.sendall(str(dic).encode())
@@ -105,6 +106,13 @@ def listen_for_messages_from_server(client):
         message = client.recv(16384).decode()
         if message != '':
             dic_received = eval(message)
+            
+            if dic_received["type"] == "error":
+                messagebox.showerror(
+                "Server:", dic_received["content"])
+                client.close()
+                break
+            
 
             username = dic_received["sender"]
             content = dic_received["content"]
@@ -146,7 +154,7 @@ bottom_frame = tk.Frame(root, width=600, height=100, bg=DEEP_PURPLE)
 bottom_frame.grid(row=2, column=0, sticky=tk.NSEW)
 
 username_label = tk.Label(
-    top_frame, text="Enter username:", font=FONT, bg=DEEP_PURPLE, fg=BLACK)
+    top_frame, text="Send message to:", font=FONT, bg=DEEP_PURPLE, fg=BLACK)
 username_label.pack(side=tk.LEFT, padx=10)
 
 username_textbox = tk.Entry(
@@ -178,11 +186,13 @@ message_box.pack(side=tk.TOP)
 
 
 # main function
-
-
-def main():
+def start_gui():
     root.mainloop()
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) != 2:
+        print("Please insert the correct format")
+    else:        
+        connect()
+        start_gui()
