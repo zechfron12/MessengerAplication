@@ -49,11 +49,8 @@ def connect():
 
     global username
     username = sys.argv[1]
-    if username != '':
-        dic = create_message_dic(username,"server","login", username)
-        client.sendall(str(dic).encode())
-    else:
-        messagebox.showerror("Invalid username", "Username cannot be empty")
+    dic = create_message_dic(username,"server","login", username)
+    client.sendall(str(dic).encode())
 
     threading.Thread(target=listen_for_messages_from_server,
                      args=(client,)).start()
