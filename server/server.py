@@ -15,7 +15,6 @@ def create_message_dic(sender, receiver, message_type, content):
         "content": content
     }
 
-
 def save_message(message):
     with open("server/database/history.txt", "a") as file_object:
         file_object.write(message + '\n')
@@ -39,7 +38,7 @@ def listen_for_messages(client, username):
 
 
 def send_message_to_client(client, message, should_save=True):
-    if should_save == True:
+    if should_save:
         save_message(message)
     client.sendall(message.encode())
 
@@ -59,7 +58,7 @@ def is_user_logged(username):
 
 def send_message_to_user(username, message):
     dic = eval(message)
-    if is_user_logged == False:
+    if not is_user_logged:
         prompt_message = create_message_dic(
             'server', dic["sender"], "error", "User is not logged or it does not exist")
         send_message_to_user(dic["sender"], str(prompt_message))
@@ -80,7 +79,7 @@ def client_handler(client):
                 'server', username, "login-error", f"{username} is already logged")
             send_message_to_client(client, str(prompt_message))
         else:
-            prompt_message = "SERVER~" + f"{username} added to the chat"
+            prompt_message = f"{username} added to the chat"
             active_clients.append((username, client))
             dic_to_send = create_message_dic(
                 'server', "all", 'informative', prompt_message)

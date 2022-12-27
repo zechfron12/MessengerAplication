@@ -14,7 +14,7 @@ PORT = 1111
 
 DEEP_PURPLE = '#78246f'
 WHITE = '#ffffff'
-LIGH_PURPLE = '#724a6d'
+LIGHT_PURPLE = '#724a6d'
 BLACK = "black"
 FONT = ("Helvetica", 17)
 BUTTON_FONT = ("Helvetica", 15)
@@ -163,11 +163,11 @@ message_textbox.bind('<Return>', onMessageReturnPress)
 message_textbox.pack(side=tk.LEFT, padx=10)
 
 message_button = tk.Button(bottom_frame, text=emoji.emojize(
-    "Send"), font=BUTTON_FONT, bg=LIGH_PURPLE, fg=BLACK, command=send_text)
+    "Send"), font=BUTTON_FONT, bg=LIGHT_PURPLE, fg=BLACK, command=send_text)
 message_button.pack(side=tk.LEFT, padx=10)
 
 send_image_button = tk.Button(bottom_frame, text="Send Image",
-                              font=BUTTON_FONT, bg=LIGH_PURPLE, fg=BLACK, command=send_image)
+                              font=BUTTON_FONT, bg=LIGHT_PURPLE, fg=BLACK, command=send_image)
 send_image_button.pack(side=tk.LEFT)
 
 message_box = scrolledtext.ScrolledText(
