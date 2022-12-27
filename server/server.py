@@ -10,7 +10,7 @@ active_clients = []
 def create_message_dic(sender, receiver, message_type, content):
     return {
         "sender": sender,
-        "reveicer": receiver,
+        "receiver": receiver,
         "type": message_type,
         "content": content
     }
@@ -25,29 +25,48 @@ def listen_for_messages(client, username):
     while 1:
 
         message = client.recv(16394).decode()
-
         if message != '':
-            send_messages_to_all(message)
+            dic = eval(message)
+            if dic["receiver"] == "all":
+                send_messages_to_all(message)
+            else:
+                send_message_to_user(dic["receiver"], message)
+                dic["type"] = "response-back"
+                send_message_to_client(client, str(dic))
 
         else:
             print(f"The message send from client {username} is empty")
 
 
-def send_message_to_client(client, message):
-    save_message(message)
+def send_message_to_client(client, message, should_save=True):
+    if should_save == True:
+        save_message(message)
     client.sendall(message.encode())
 
 
 def send_messages_to_all(message):
+    save_message(message)
     for user in active_clients:
-        send_message_to_client(user[1], message)
+        send_message_to_client(user[1], message, should_save=False)
 
 
-def is_user_already_logged(username):
-    for client in active_clients:
-        if username in client:
+def is_user_logged(username):
+    for active_client in active_clients:
+        if username in active_client:
             return True
     return False
+
+
+def send_message_to_user(username, message):
+    dic = eval(message)
+    if is_user_logged == False:
+        prompt_message = create_message_dic(
+            'server', dic["sender"], "error", "User is not logged or it does not exist")
+        send_message_to_user(dic["sender"], str(prompt_message))
+    else:
+        for active_client in active_clients:
+            if username in active_client:
+                send_message_to_client(active_client[1], message)
 
 
 def client_handler(client):
@@ -56,7 +75,7 @@ def client_handler(client):
     login_dic = eval(message)
     username = login_dic["sender"]
     if username != '':
-        if is_user_already_logged(username):
+        if is_user_logged(username):
             prompt_message = create_message_dic(
                 'server', username, "login-error", f"{username} is already logged")
             send_message_to_client(client, str(prompt_message))

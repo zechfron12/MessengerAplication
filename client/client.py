@@ -55,15 +55,13 @@ def connect():
     threading.Thread(target=listen_for_messages_from_server,
                      args=(client,)).start()
 
-    username_textbox.config(state=tk.DISABLED)
-    username_button.config(state=tk.DISABLED)
-
 
 def send_text():
     message = message_textbox.get()
 
     if message != '':
-        dic = create_message_dic(username, "all", "message", message)
+        dic = create_message_dic(
+            username, field_receiver.get() if field_receiver.get() != '' else 'all', "message", message)
 
         client.sendall(str(dic).encode())
         message_textbox.delete(0, len(message))
@@ -79,7 +77,8 @@ def send_image():
 
     encoded_data = b64encode(raw_image_data)
 
-    dic = create_message_dic(username, "", "image", encoded_data)
+    dic = create_message_dic(
+        username, field_receiver.get(), "image", encoded_data)
     client.sendall(str(dic).encode())
     im = Image.open(path)
 
@@ -112,13 +111,15 @@ def listen_for_messages_from_server(client):
                 messagebox.showerror(
                     "Server:", dic_received["content"])
 
-            username = dic_received["sender"]
+            sender = dic_received["sender"]
+            receiver = dic_received["receiver"]
             content = dic_received["content"]
 
             if dic_received["type"] == "image":
+                add_message(f"[From: {sender}][To: {receiver}]")
                 handle_img_received(content)
             else:
-                add_message(f"[{username}] {content}")
+                add_message(f"[From: {sender}][To: {receiver}] {content}")
 
         else:
             messagebox.showerror(
@@ -127,10 +128,6 @@ def listen_for_messages_from_server(client):
 
 def onMessageReturnPress(*arg):
     send_text()
-
-
-def onIdReturnPress(*arg):
-    connect()
 
 
 root = tk.Tk()
@@ -155,14 +152,10 @@ username_label = tk.Label(
     top_frame, text="Send message to:", font=FONT, bg=DEEP_PURPLE, fg=BLACK)
 username_label.pack(side=tk.LEFT, padx=10)
 
-username_textbox = tk.Entry(
-    top_frame, font=FONT, bg=WHITE, fg=BLACK, width=23)
-username_textbox.bind('<Return>', onIdReturnPress)
-username_textbox.pack(side=tk.LEFT)
-
-username_button = tk.Button(
-    top_frame, text="Join", font=BUTTON_FONT, bg=LIGH_PURPLE, fg=BLACK, command=connect)
-username_button.pack(side=tk.LEFT, padx=15)
+field_receiver = tk.StringVar(value="all")
+receiver_textbox = tk.Entry(
+    top_frame, font=FONT, bg=WHITE, fg=BLACK, width=23, textvariable=field_receiver)
+receiver_textbox.pack(side=tk.LEFT)
 
 message_textbox = tk.Entry(bottom_frame, font=FONT,
                            bg=WHITE, fg=BLACK, width=28)
