@@ -58,8 +58,8 @@ def client_handler(client):
     if username != '':
         if is_user_already_logged(username):
             prompt_message = create_message_dic(
-                'server', username, "error", f"{username} is already logged")
-            send_message_to_client(client, prompt_message)
+                'server', username, "login-error", f"{username} is already logged")
+            send_message_to_client(client, str(prompt_message))
         else:
             prompt_message = "SERVER~" + f"{username} added to the chat"
             active_clients.append((username, client))

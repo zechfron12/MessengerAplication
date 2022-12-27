@@ -19,3 +19,9 @@
 {'sender': 'radu2', 'receiver': 'all', 'type': 'message', 'content': ':thumsup:'}
 {'sender': 'radu2', 'receiver': 'all', 'type': 'message', 'content': ':thumbs_up:'}
 {'sender': 'radu2', 'receiver': 'all', 'type': 'message', 'content': ':thumbs_up:'}
+{'sender': 'server', 'reveicer': 'all', 'type': 'informative', 'content': 'SERVER~radu1 added to the chat'}
+{'sender': 'server', 'reveicer': 'radu1', 'type': 'error', 'content': 'radu1 is already logged'}
+{'sender': 'server', 'reveicer': 'all', 'type': 'informative', 'content': 'SERVER~radu1 added to the chat'}
+{'sender': 'server', 'reveicer': 'radu1', 'type': 'login-error', 'content': 'radu1 is already logged'}
+{'sender': 'server', 'reveicer': 'all', 'type': 'informative', 'content': 'SERVER~radu1 added to the chat'}
+{'sender': 'server', 'reveicer': 'radu1', 'type': 'login-error', 'content': 'radu1 is already logged'}

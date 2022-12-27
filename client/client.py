@@ -23,7 +23,7 @@ SMALL_FONT = ("Helvetica", 13)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
-def create_message_dic(sender,receiver, message_type, content):
+def create_message_dic(sender, receiver, message_type, content):
     return {
         "sender": sender,
         "receiver": receiver,
@@ -49,7 +49,7 @@ def connect():
 
     global username
     username = sys.argv[1]
-    dic = create_message_dic(username,"server","login", username)
+    dic = create_message_dic(username, "server", "login", username)
     client.sendall(str(dic).encode())
 
     threading.Thread(target=listen_for_messages_from_server,
@@ -63,7 +63,7 @@ def send_text():
     message = message_textbox.get()
 
     if message != '':
-        dic = create_message_dic(username,"all", "message", message)
+        dic = create_message_dic(username, "all", "message", message)
 
         client.sendall(str(dic).encode())
         message_textbox.delete(0, len(message))
@@ -79,7 +79,7 @@ def send_image():
 
     encoded_data = b64encode(raw_image_data)
 
-    dic = create_message_dic(username,"","image", encoded_data)
+    dic = create_message_dic(username, "", "image", encoded_data)
     client.sendall(str(dic).encode())
     im = Image.open(path)
 
@@ -99,17 +99,18 @@ def handle_img_received(b64image):
 
 def listen_for_messages_from_server(client):
     while 1:
-
         message = client.recv(16384).decode()
         if message != '':
             dic_received = eval(message)
-            
+
+            if dic_received["type"] == "login-error":
+                messagebox.showerror(
+                    "Server:", dic_received["content"])
+                break
+
             if dic_received["type"] == "error":
                 messagebox.showerror(
-                "Server:", dic_received["content"])
-                client.close()
-                break
-            
+                    "Server:", dic_received["content"])
 
             username = dic_received["sender"]
             content = dic_received["content"]
@@ -122,7 +123,7 @@ def listen_for_messages_from_server(client):
         else:
             messagebox.showerror(
                 "Error", "Message recevied from client is empty")
-            
+
 
 def onMessageReturnPress(*arg):
     send_text()
@@ -190,6 +191,6 @@ def start_gui():
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Please insert the correct format")
-    else:        
+    else:
         connect()
         start_gui()
