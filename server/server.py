@@ -1,10 +1,9 @@
-# Import required modules
 import socket
 import threading
 
 HOST = '127.0.0.1'
 PORT = 1111
-LISTENER_LIMIT = 5
+LISTENER_LIMIT = 10
 active_clients = []
 
 
