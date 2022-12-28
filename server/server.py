@@ -15,6 +15,7 @@ def create_message_dic(sender, receiver, message_type, content):
         "content": content
     }
 
+
 def save_message(message):
     with open("server/database/history.txt", "a") as file_object:
         file_object.write(message + '\n')

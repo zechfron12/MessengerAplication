@@ -78,7 +78,7 @@ def send_image():
     encoded_data = b64encode(raw_image_data)
 
     dic = create_message_dic(
-        username, field_receiver.get(), "image", encoded_data)
+        username, field_receiver.get() if field_receiver.get() != '' else 'all', "image", encoded_data)
     client.sendall(str(dic).encode())
     im = Image.open(path)
 
