@@ -69,6 +69,16 @@ def send_message_to_user(username, message):
                 send_message_to_client(active_client[1], message)
 
 
+def send_history_to_client(username, client):
+    with open("server/database/history.txt", "r") as file:
+        content = ''
+        for line in file:
+            dic = eval(line)
+            if (dic['receiver'] == username or dic['sender'] == username or dic['receiver'] == 'all') and dic['type'] != "informative":
+                content += str(dic) + '\n'
+        send_message_to_client(client, "STARTLOG~"+content+"~ENDLOG", False)
+
+
 def client_handler(client):
     message = client.recv(16384).decode()
 
@@ -85,6 +95,7 @@ def client_handler(client):
             dic_to_send = create_message_dic(
                 'server', "all", 'informative', prompt_message)
             send_messages_to_all(str(dic_to_send))
+            send_history_to_client(username, client)
             threading.Thread(target=listen_for_messages,
                              args=(client, username,)).start()
     else:

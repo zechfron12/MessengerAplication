@@ -96,12 +96,13 @@ def handle_img_received(b64image):
     message_box.config(state=tk.DISABLED)
 
 
-def listen_for_messages_from_server(client):
-    while 1:
-        message = client.recv(16384).decode()
-        if message != '':
-            dic_received = eval(message)
-
+def process_history(history):
+    start = history.index("STARTLOG~") + len("STARTLOG~")
+    end = history.index("~ENDLOG", start)
+    logs = history[start:end].split("\n")
+    for log in logs:
+        if log != '':
+            dic_received = eval(log)
             if dic_received["type"] == "login-error":
                 messagebox.showerror(
                     "Server:", dic_received["content"])
@@ -120,6 +121,40 @@ def listen_for_messages_from_server(client):
                 handle_img_received(content)
             else:
                 add_message(f"[From: {sender}][To: {receiver}] {content}")
+
+
+def listen_for_messages_from_server(client):
+    while 1:
+        message = client.recv(16384).decode()
+        if message != '':
+            if message.startswith("STARTLOG~"):
+                history_message = message
+                while 1:
+                    if history_message.endswith("~ENDLOG"):
+                        process_history(history_message)
+                        break
+                    history_message += client.recv(16384).decode()
+            else:
+                dic_received = eval(message)
+
+                if dic_received["type"] == "login-error":
+                    messagebox.showerror(
+                        "Server:", dic_received["content"])
+                    break
+
+                if dic_received["type"] == "error":
+                    messagebox.showerror(
+                        "Server:", dic_received["content"])
+
+                sender = dic_received["sender"]
+                receiver = dic_received["receiver"]
+                content = dic_received["content"]
+
+                if dic_received["type"] == "image":
+                    add_message(f"[From: {sender}][To: {receiver}]")
+                    handle_img_received(content)
+                else:
+                    add_message(f"[From: {sender}][To: {receiver}] {content}")
 
         else:
             messagebox.showerror(
