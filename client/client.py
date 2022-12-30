@@ -103,24 +103,22 @@ def process_history(history):
     for log in logs:
         if log != '':
             dic_received = eval(log)
-            if dic_received["type"] == "login-error":
-                messagebox.showerror(
-                    "Server:", dic_received["content"])
-                break
+            display_dic(dic_received)
 
-            if dic_received["type"] == "error":
-                messagebox.showerror(
-                    "Server:", dic_received["content"])
 
-            sender = dic_received["sender"]
-            receiver = dic_received["receiver"]
-            content = dic_received["content"]
-
-            if dic_received["type"] == "image":
-                add_message(f"[From: {sender}][To: {receiver}]")
-                handle_img_received(content)
-            else:
-                add_message(f"[From: {sender}][To: {receiver}] {content}")
+def display_dic(dic_received):
+    if dic_received["type"] == "error":
+        messagebox.showerror(
+            "Server:", dic_received["content"])
+    else:
+        sender = dic_received["sender"]
+        receiver = dic_received["receiver"]
+        content = dic_received["content"]
+        if dic_received["type"] == "image":
+            add_message(f"[From: {sender}][To: {receiver}]")
+            handle_img_received(content)
+        else:
+            add_message(f"[From: {sender}][To: {receiver}] {content}")
 
 
 def listen_for_messages_from_server(client):
@@ -141,20 +139,7 @@ def listen_for_messages_from_server(client):
                     messagebox.showerror(
                         "Server:", dic_received["content"])
                     break
-
-                if dic_received["type"] == "error":
-                    messagebox.showerror(
-                        "Server:", dic_received["content"])
-
-                sender = dic_received["sender"]
-                receiver = dic_received["receiver"]
-                content = dic_received["content"]
-
-                if dic_received["type"] == "image":
-                    add_message(f"[From: {sender}][To: {receiver}]")
-                    handle_img_received(content)
-                else:
-                    add_message(f"[From: {sender}][To: {receiver}] {content}")
+                display_dic(dic_received)
 
         else:
             messagebox.showerror(

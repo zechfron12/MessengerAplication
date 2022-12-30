@@ -26,3 +26,4 @@
 {'sender': 'radu1', 'receiver': 'all', 'type': 'message', 'content': ':thumbs_up:'}
 {'sender': 'radu2', 'receiver': 'all', 'type': 'message', 'content': ':snake:'}
 {'sender': 'server', 'receiver': 'all', 'type': 'informative', 'content': 'radu1 added to the chat'}
+{'sender': 'server', 'receiver': 'all', 'type': 'informative', 'content': 'radu1 added to the chat'}
