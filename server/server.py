@@ -8,6 +8,7 @@ HOST = '127.0.0.1'
 PORT = 1111
 LISTENER_LIMIT = 10
 active_clients = []
+client_to_fernet = []
 
 
 public_key, private_key = rsa.newkeys(2048)
@@ -28,10 +29,10 @@ def save_message(message):
         file_object.write(message + '\n')
 
 
-def listen_for_messages(client, username):
+def listen_for_messages(client, username, fernet):
     while 1:
 
-        message = client.recv(16394).decode()
+        message = fernet.decrypt(client.recv(16394)).decode()
         if message != '':
             dic = eval(message)
             if dic["receiver"] == "all":
@@ -48,7 +49,12 @@ def listen_for_messages(client, username):
 def send_message_to_client(client, message, should_save=True):
     if should_save:
         save_message(message)
-    client.sendall(message.encode())
+
+    f = get_fernet(client)
+    if f:
+        client.sendall(f.encrypt(message.encode()))
+    else:
+        client.sendall(message.encode())
 
 
 def send_messages_to_all(message):
@@ -86,6 +92,13 @@ def send_history_to_client(username, client):
         send_message_to_client(client, "STARTLOG~"+content+"~ENDLOG", False)
 
 
+def get_fernet(client):
+    for tup in client_to_fernet:
+        if client in tup:
+            return tup[1]
+    return False
+
+
 def client_handler(client):
     message = client.recv(16384).decode()
 
@@ -98,7 +111,11 @@ def client_handler(client):
                 'server', username, "login-error", f"{username} is already logged")
             send_message_to_client(client, str(prompt_message))
         else:
-            client.send(public_key.save_pkcs1("PEM"))
+            key = Fernet.generate_key()
+            fernet = Fernet(key)
+            client_to_fernet.append((client, fernet))
+            print(key.decode())
+            client.send(rsa.encrypt(key, client_key))
             time.sleep(1)
             prompt_message = f"{username} added to the chat"
             active_clients.append((username, client))
@@ -107,7 +124,7 @@ def client_handler(client):
             send_messages_to_all(str(dic_to_send))
             send_history_to_client(username, client)
             threading.Thread(target=listen_for_messages,
-                             args=(client, username,)).start()
+                             args=(client, username, fernet)).start()
     else:
         print("Client username is empty")
 

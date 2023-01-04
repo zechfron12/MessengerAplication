@@ -9,6 +9,7 @@ import rsa
 from base64 import b64encode, b64decode
 from tkinter import scrolledtext, messagebox, filedialog
 from PIL import Image, ImageTk
+from cryptography.fernet import Fernet
 
 HOST = '127.0.0.1'
 PORT = 1111
@@ -58,8 +59,10 @@ def connect():
     dic = create_message_dic(username, "server", "login", key)
     client.sendall(str(dic).encode())
 
-    server_key = rsa.PublicKey.load_pkcs1(client.recv(16394))
-
+    fernet_key = rsa.decrypt(client.recv(16384), private_key)
+    print(fernet_key.decode())
+    global fernet
+    fernet = Fernet(fernet_key)
     threading.Thread(target=listen_for_messages_from_server,
                      args=(client,)).start()
 
@@ -70,7 +73,9 @@ def send_text():
     if message != '':
         dic = create_message_dic(
             username, field_receiver.get() if field_receiver.get() != '' else 'all', "message", message)
-        client.sendall(str(dic).encode())
+
+        token = fernet.encrypt(str(dic).encode())
+        client.sendall(token)
         message_textbox.delete(0, len(message))
     else:
         messagebox.showerror("Empty message", "Message cannot be empty")
@@ -86,8 +91,8 @@ def send_image():
 
     dic = create_message_dic(
         username, field_receiver.get() if field_receiver.get() != '' else 'all', "image", encoded_data)
-
-    client.sendall(str(dic).encode())
+    token = fernet.encrypt(str(dic).encode())
+    client.sendall(token)
     im = Image.open(path)
 
 
@@ -131,7 +136,7 @@ def display_dic(dic_received):
 
 def listen_for_messages_from_server(client):
     while 1:
-        message = client.recv(16384).decode()
+        message = fernet.decrypt(client.recv(16384)).decode()
         if message != '':
             if message.startswith("STARTLOG~"):
                 history_message = message
@@ -139,7 +144,8 @@ def listen_for_messages_from_server(client):
                     if history_message.endswith("~ENDLOG"):
                         process_history(history_message)
                         break
-                    history_message += client.recv(16384).decode()
+                    history_message += fernet.decrypt(
+                        client.recv(16384)).decode()
             else:
                 dic_received = eval(message)
 
