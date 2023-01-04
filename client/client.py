@@ -5,12 +5,18 @@ import threading
 import emoji
 import io
 import tkinter as tk
+import rsa
+import json
 from base64 import b64encode, b64decode
 from tkinter import scrolledtext, messagebox, filedialog
 from PIL import Image, ImageTk
 
 HOST = '127.0.0.1'
 PORT = 1111
+
+global public_key, private_key
+public_key, private_key = rsa.newkeys(1024)
+global server_key
 
 DEEP_PURPLE = '#78246f'
 WHITE = '#ffffff'
@@ -21,6 +27,23 @@ BUTTON_FONT = ("Helvetica", 15)
 SMALL_FONT = ("Helvetica", 13)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+def encrypt(text: str, pb_key):
+    text = text.encode()
+    result = []
+    for n in range(0, len(text), 100):
+        part = text[n:n+100]
+        result.append(rsa.encrypt(part, pb_key))
+    return b''.join(result)
+
+
+def decrypt(text: bytes, pr_key):
+    result = []
+    for n in range(0, len(text), 100):
+        part = text[n:n+100]
+        result.append(rsa.decrypt(part, pr_key))
+    return b''.join(result)
 
 
 def create_message_dic(sender, receiver, message_type, content):
@@ -49,8 +72,11 @@ def connect():
 
     global username
     username = sys.argv[1]
-    dic = create_message_dic(username, "server", "login", username)
+    key = public_key.save_pkcs1("PEM").decode()
+    dic = create_message_dic(username, "server", "login", key)
     client.sendall(str(dic).encode())
+
+    server_key = rsa.PublicKey.load_pkcs1(client.recv(16394))
 
     threading.Thread(target=listen_for_messages_from_server,
                      args=(client,)).start()
@@ -62,7 +88,6 @@ def send_text():
     if message != '':
         dic = create_message_dic(
             username, field_receiver.get() if field_receiver.get() != '' else 'all', "message", message)
-
         client.sendall(str(dic).encode())
         message_textbox.delete(0, len(message))
     else:
@@ -79,7 +104,8 @@ def send_image():
 
     dic = create_message_dic(
         username, field_receiver.get() if field_receiver.get() != '' else 'all', "image", encoded_data)
-    client.sendall(str(dic).encode())
+
+    client.sendall(str(dic))
     im = Image.open(path)
 
 
