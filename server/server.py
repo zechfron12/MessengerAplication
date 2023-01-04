@@ -48,9 +48,7 @@ def save_message(message):
 def listen_for_messages(client, username):
     while 1:
 
-        message = client.recv(16394)
-        print(message)
-        message.decode()
+        message = client.recv(16394).decode()
         if message != '':
             dic = eval(message)
             if dic["receiver"] == "all":

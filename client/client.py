@@ -105,7 +105,7 @@ def send_image():
     dic = create_message_dic(
         username, field_receiver.get() if field_receiver.get() != '' else 'all', "image", encoded_data)
 
-    client.sendall(str(dic))
+    client.sendall(str(dic).encode())
     im = Image.open(path)
 
 
