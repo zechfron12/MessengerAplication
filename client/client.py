@@ -6,7 +6,6 @@ import emoji
 import io
 import tkinter as tk
 import rsa
-import json
 from base64 import b64encode, b64decode
 from tkinter import scrolledtext, messagebox, filedialog
 from PIL import Image, ImageTk
@@ -27,23 +26,6 @@ BUTTON_FONT = ("Helvetica", 15)
 SMALL_FONT = ("Helvetica", 13)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-
-def encrypt(text: str, pb_key):
-    text = text.encode()
-    result = []
-    for n in range(0, len(text), 100):
-        part = text[n:n+100]
-        result.append(rsa.encrypt(part, pb_key))
-    return b''.join(result)
-
-
-def decrypt(text: bytes, pr_key):
-    result = []
-    for n in range(0, len(text), 100):
-        part = text[n:n+100]
-        result.append(rsa.decrypt(part, pr_key))
-    return b''.join(result)
 
 
 def create_message_dic(sender, receiver, message_type, content):
