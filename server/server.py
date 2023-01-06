@@ -65,8 +65,7 @@ def listen_for_messages(client, username):
                 send_messages_to_all(message)
             else:
                 send_message_to_user(dic["receiver"], message)
-                dic["type"] = "response-back"
-                send_message_to_client(client, str(dic))
+                send_message_to_client(client, str(dic), False)
 
         else:
             print(f"The message send from client {username} is empty")
