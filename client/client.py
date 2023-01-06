@@ -9,7 +9,8 @@ import rsa
 from base64 import b64encode, b64decode
 from tkinter import scrolledtext, messagebox, filedialog
 from PIL import Image, ImageTk
-from cryptography.fernet import Fernet
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 
 HOST = '127.0.0.1'
 PORT = 1111
@@ -17,6 +18,22 @@ PORT = 1111
 global public_key, private_key
 public_key, private_key = rsa.newkeys(1024)
 global server_key
+
+
+def encrypt(message: bytes, key):
+    cipher = AES.new(key, AES.MODE_CBC)
+    iv = cipher.iv
+    ciphered_data = cipher.encrypt(pad(message, AES.block_size))
+    return iv + ciphered_data
+
+
+def decrypt(message: bytes, key):
+    iv = message[:16]
+    decrypt_data = message[16:]
+    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+    original = unpad(cipher.decrypt(decrypt_data), AES.block_size)
+    return original
+
 
 DEEP_PURPLE = '#78246f'
 WHITE = '#ffffff'
@@ -59,10 +76,10 @@ def connect():
     dic = create_message_dic(username, "server", "login", key)
     client.sendall(str(dic).encode())
 
-    fernet_key = rsa.decrypt(client.recv(16384), private_key)
-    print(fernet_key.decode())
-    global fernet
-    fernet = Fernet(fernet_key)
+    global aes_key
+    aes_key = rsa.decrypt(client.recv(16384), private_key)
+    print(aes_key)
+
     threading.Thread(target=listen_for_messages_from_server,
                      args=(client,)).start()
 
@@ -74,8 +91,7 @@ def send_text():
         dic = create_message_dic(
             username, field_receiver.get() if field_receiver.get() != '' else 'all', "message", message)
 
-        token = fernet.encrypt(str(dic).encode())
-        client.sendall(token)
+        client.sendall(encrypt(str(dic).encode(), aes_key))
         message_textbox.delete(0, len(message))
     else:
         messagebox.showerror("Empty message", "Message cannot be empty")
@@ -91,8 +107,7 @@ def send_image():
 
     dic = create_message_dic(
         username, field_receiver.get() if field_receiver.get() != '' else 'all', "image", encoded_data)
-    token = fernet.encrypt(str(dic).encode())
-    client.sendall(token)
+    client.sendall(encrypt(str(dic).encode(), aes_key))
     im = Image.open(path)
 
 
@@ -136,15 +151,16 @@ def display_dic(dic_received):
 
 def listen_for_messages_from_server(client):
     while 1:
-        message = fernet.decrypt(client.recv(16384)).decode()
+        message = decrypt(client.recv(16384), aes_key).decode()
         if message != '':
             if message.startswith("STARTLOG~"):
+                print()
                 history_message = message
                 while 1:
                     if history_message.endswith("~ENDLOG"):
                         process_history(history_message)
                         break
-                    history_message += fernet.decrypt(
+                    history_message += decrypt(
                         client.recv(16384)).decode()
             else:
                 dic_received = eval(message)

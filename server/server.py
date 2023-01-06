@@ -2,13 +2,39 @@ import socket
 import threading
 import rsa
 import time
-from cryptography.fernet import Fernet
+from Crypto.Random import get_random_bytes
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+
+simple_key = get_random_bytes(32)
+salt = simple_key
+password = "mypassword"
+
+key = PBKDF2(password, salt, dkLen=32)
+
+message = b"Hello Secred world!"
+
+
+def encrypt(message: bytes, key):
+    cipher = AES.new(key, AES.MODE_CBC)
+    iv = cipher.iv
+    ciphered_data = cipher.encrypt(pad(message, AES.block_size))
+    return iv + ciphered_data
+
+
+def decrypt(message: bytes, key):
+    iv = message[:16]
+    decrypt_data = message[16:]
+    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+    original = unpad(cipher.decrypt(decrypt_data), AES.block_size)
+    return original
+
 
 HOST = '127.0.0.1'
 PORT = 1111
 LISTENER_LIMIT = 10
 active_clients = []
-client_to_fernet = []
 
 
 public_key, private_key = rsa.newkeys(2048)
@@ -29,10 +55,10 @@ def save_message(message):
         file_object.write(message + '\n')
 
 
-def listen_for_messages(client, username, fernet):
+def listen_for_messages(client, username):
     while 1:
 
-        message = fernet.decrypt(client.recv(16394)).decode()
+        message = decrypt(client.recv(16394), key).decode()
         if message != '':
             dic = eval(message)
             if dic["receiver"] == "all":
@@ -50,11 +76,7 @@ def send_message_to_client(client, message, should_save=True):
     if should_save:
         save_message(message)
 
-    f = get_fernet(client)
-    if f:
-        client.sendall(f.encrypt(message.encode()))
-    else:
-        client.sendall(message.encode())
+    client.sendall(encrypt(message.encode(), key))
 
 
 def send_messages_to_all(message):
@@ -92,13 +114,6 @@ def send_history_to_client(username, client):
         send_message_to_client(client, "STARTLOG~"+content+"~ENDLOG", False)
 
 
-def get_fernet(client):
-    for tup in client_to_fernet:
-        if client in tup:
-            return tup[1]
-    return False
-
-
 def client_handler(client):
     message = client.recv(16384).decode()
 
@@ -111,10 +126,7 @@ def client_handler(client):
                 'server', username, "login-error", f"{username} is already logged")
             send_message_to_client(client, str(prompt_message))
         else:
-            key = Fernet.generate_key()
-            fernet = Fernet(key)
-            client_to_fernet.append((client, fernet))
-            print(key.decode())
+            print(key)
             client.send(rsa.encrypt(key, client_key))
             time.sleep(1)
             prompt_message = f"{username} added to the chat"
@@ -122,9 +134,9 @@ def client_handler(client):
             dic_to_send = create_message_dic(
                 'server', "all", 'informative', prompt_message)
             send_messages_to_all(str(dic_to_send))
-            send_history_to_client(username, client)
+            # send_history_to_client(username, client)
             threading.Thread(target=listen_for_messages,
-                             args=(client, username, fernet)).start()
+                             args=(client, username)).start()
     else:
         print("Client username is empty")
 
