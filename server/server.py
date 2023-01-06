@@ -110,7 +110,9 @@ def send_history_to_client(username, client):
             dic = eval(line)
             if (dic['receiver'] == username or dic['sender'] == username or dic['receiver'] == 'all') and dic['type'] != "informative":
                 content += str(dic) + '\n'
-        send_message_to_client(client, "STARTLOG~"+content+"~ENDLOG", False)
+        enc_dic = encrypt(content.encode(), key)
+        client.sendall(b"STARTLOG~" + enc_dic + b"~ENDLOG")
+        # send_message_to_client(client, "STARTLOG~"+content+"~ENDLOG", False)
 
 
 def client_handler(client):
@@ -133,7 +135,7 @@ def client_handler(client):
             dic_to_send = create_message_dic(
                 'server', "all", 'informative', prompt_message)
             send_messages_to_all(str(dic_to_send))
-            # send_history_to_client(username, client)
+            send_history_to_client(username, client)
             threading.Thread(target=listen_for_messages,
                              args=(client, username)).start()
     else:

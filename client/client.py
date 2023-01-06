@@ -78,7 +78,6 @@ def connect():
 
     global aes_key
     aes_key = rsa.decrypt(client.recv(16384), private_key)
-    print(aes_key)
 
     threading.Thread(target=listen_for_messages_from_server,
                      args=(client,)).start()
@@ -125,9 +124,10 @@ def handle_img_received(b64image):
 
 
 def process_history(history):
-    start = history.index("STARTLOG~") + len("STARTLOG~")
-    end = history.index("~ENDLOG", start)
-    logs = history[start:end].split("\n")
+    start = history.index(b"STARTLOG~") + len(b"STARTLOG~")
+    end = history.index(b"~ENDLOG", start)
+    history = decrypt(history[start:end], aes_key).decode()
+    logs = history.split('\n')
     for log in logs:
         if log != '':
             dic_received = eval(log)
@@ -151,18 +151,18 @@ def display_dic(dic_received):
 
 def listen_for_messages_from_server(client):
     while 1:
-        message = decrypt(client.recv(16384), aes_key).decode()
-        if message != '':
-            if message.startswith("STARTLOG~"):
-                print()
-                history_message = message
-                while 1:
-                    if history_message.endswith("~ENDLOG"):
-                        process_history(history_message)
-                        break
-                    history_message += decrypt(
-                        client.recv(16384)).decode()
-            else:
+        message = client.recv(16384)
+        if message.startswith(b"STARTLOG~"):
+            history_message = message
+            while 1:
+                if history_message.endswith(b"~ENDLOG"):
+                    process_history(history_message)
+                    break
+                history_message += client.recv(16384)
+        else:
+            message = decrypt(message, aes_key).decode()
+            if message != '':
+
                 dic_received = eval(message)
 
                 if dic_received["type"] == "login-error":
@@ -171,9 +171,9 @@ def listen_for_messages_from_server(client):
                     break
                 display_dic(dic_received)
 
-        else:
-            messagebox.showerror(
-                "Error", "Message recevied from client is empty")
+            else:
+                messagebox.showerror(
+                    "Error", "Message recevied from client is empty")
 
 
 def onMessageReturnPress(*arg):
